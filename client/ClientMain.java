@@ -31,7 +31,7 @@ public class ClientMain {
 
             if (UserSession.isLoggedIn()) {
                 if (UserSession.isAdmin()) {
-                    AdminMenu.show(sc);
+                    ExternalServerClient.showMenu(sc);
                 } else {
                     UserMenu.show(sc);
                 }

@@ -33,12 +33,12 @@ public class AuthClient {
         JSONObject payload = new JSONObject();
         payload.put("username", username);
         payload.put("password", password);
-
+        
         String result = APIService.send("/api/auth/login", "POST", payload.toString());
-        if (result.contains("Login successful")) {
-            System.out.println(result);
-            boolean isAdmin = result.toLowerCase().contains("admin");
-            UserSession.setUser(username, isAdmin);
+        JSONObject jsonObject = new JSONObject (result);
+        if (result.contains("Login successful.")) {
+            boolean isAdmin = jsonObject.getBoolean("isAdmin");
+            UserSession.setUser(jsonObject.getInt("userId"), username, isAdmin);
         } else {
             System.out.println("Login failed: " + result);
         }
