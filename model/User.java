@@ -3,12 +3,12 @@ package com.newsaggregation.model;
 import java.sql.Timestamp;
 
 public class User {
-	private final int id;
-    private final String username;
-    private final String email;
-    private final String password;
-    private final int roleId;
-    private final Timestamp lastViewedNotificationsAt;
+	private  int id;
+    private  String username;
+    private  String email;
+    private  String password;
+    private  int roleId;
+    private  Timestamp lastViewedNotificationsAt;
 
     public User(int id, String username, String email, String password, int roleId, Timestamp lastViewedNotificationsAt) {
         this.id = id;
@@ -50,4 +50,30 @@ public class User {
     public Timestamp getLastViewedNotificationsAt() {
     	return lastViewedNotificationsAt;
     }
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public void setRoleId(int roleId) {
+		this.roleId = roleId;
+	}
+
+	public void setLastViewedNotificationsAt(Timestamp lastViewedNotificationsAt) {
+		this.lastViewedNotificationsAt = lastViewedNotificationsAt;
+	}
+    
+    
 }

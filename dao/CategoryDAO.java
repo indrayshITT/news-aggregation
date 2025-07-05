@@ -18,6 +18,16 @@ public class CategoryDAO {
         this.connection = dbConnection.getConnection();
     }
     
+    public String getNameById(int catId) throws SQLException {
+    	String query = "SELECT name FROM categories WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, catId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("name");
+        }
+		return "";
+    }
+    
     public List<Category> getAll() throws Exception {
         List<Category> list = new ArrayList<>();
         String sql = "SELECT * FROM categories";
@@ -29,7 +39,6 @@ public class CategoryDAO {
         }
         return list;
     }
-
     public void saveNewsCategory(int newsId, String categoryName) throws Exception {
         int categoryId = getOrCreateCategoryId(categoryName);
         String sql = "INSERT IGNORE INTO news_categories (news_id, category_id) VALUES (?, ?)";

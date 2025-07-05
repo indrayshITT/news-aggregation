@@ -5,6 +5,7 @@ import java.util.List;
 import com.newsaggregation.config.DatabaseConnection;
 import com.newsaggregation.config.MySQLDatabaseConnection;
 import com.newsaggregation.dao.SavedArticleDAO;
+import com.newsaggregation.model.News;
 import com.newsaggregation.model.SavedArticle;
 
 public class SavedArticleService {
@@ -14,7 +15,7 @@ public class SavedArticleService {
         this.dbConnection = new MySQLDatabaseConnection();
     }
 
-    public List<SavedArticle> getAllByUser(int userId) throws Exception {
+    public List<News> getAllByUser(int userId) throws Exception {
         SavedArticleDAO dao = new SavedArticleDAO(dbConnection);
         try {
             return dao.getAllByUserId(userId);

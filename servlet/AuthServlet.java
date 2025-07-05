@@ -1,8 +1,11 @@
 package com.newsaggregation.servlet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.newsaggregation.model.User;
 import com.newsaggregation.service.UserService;
 
@@ -15,9 +18,10 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/api/auth/*")
 public class AuthServlet extends HttpServlet{
 	private final UserService userService = new UserService();
+	private final Gson gson = new Gson();
 
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String action = req.getPathInfo();
+		String action = req.getPathInfo();
         PrintWriter out = resp.getWriter();
 
         if (action == null) {
@@ -27,30 +31,31 @@ public class AuthServlet extends HttpServlet{
         }
 
         switch (action) {
-            case "/signup":
-                handleSignup(req, out);
-                break;
-            case "/login":
-                handleLogin(req, req.getSession(), out);
-                break;
-            case "/logout":
+            case "/signup" -> handleSignup(req, out);
+            case "/login" -> handleLogin(req, req.getSession(), out);
+            case "/logout" -> {
                 req.getSession().invalidate();
                 out.println("Logged out successfully.");
-                break;
-            default:
+            }
+            default -> {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 out.println("Invalid auth action: " + action);
+            }
         }
     }
 
-	private void handleSignup(HttpServletRequest req, PrintWriter out) {
-        String username = req.getParameter("username");
-        String email = req.getParameter("email");
-        String password = req.getParameter("password");
-        int roleId = 2; // default role (user)
-
+    private void handleSignup(HttpServletRequest req, PrintWriter out) {
         try {
-            User user = new User(username, email, password, roleId);
+            BufferedReader reader = req.getReader();
+            User userDetail = gson.fromJson(reader, User.class);
+
+            User user = new User(
+                userDetail.getUsername(),
+                userDetail.getEmail(),
+                userDetail.getPassword(),
+                2 // default role: user
+            );
+
             userService.register(user);
             out.println("User registered successfully.");
         } catch (Exception e) {
@@ -59,15 +64,34 @@ public class AuthServlet extends HttpServlet{
     }
 
     private void handleLogin(HttpServletRequest req, HttpSession session, PrintWriter out) {
-        String username = req.getParameter("username");
-        String password = req.getParameter("password");
+    	Gson gson = new Gson();
 
-        try {
-            User user = userService.login(username, password);
-            session.setAttribute("user", user);
-            out.println("Login successful. Welcome, " + user.getUsername() + "!");
+        try (BufferedReader reader = req.getReader()) {
+            User userDetail = gson.fromJson(reader, User.class);
+
+            try {
+                User user = userService.login(userDetail.getUsername(), userDetail.getPassword());
+                session.setAttribute("user", user);
+
+                JsonObject responseJson = new JsonObject();
+                responseJson.addProperty("status", "success");
+                responseJson.addProperty("message", "Login successful. Welcome, " + user.getUsername() + "!");
+                responseJson.addProperty("userId", user.getId());
+                responseJson.addProperty("isAdmin", user.getRoleId() == 1);
+
+                out.println(responseJson.toString());
+
+            } catch (Exception e) {
+                JsonObject errorJson = new JsonObject();
+                errorJson.addProperty("status", "error");
+                errorJson.addProperty("message", "Login failed: " + e.getMessage());
+                out.println(errorJson.toString());
+            }
         } catch (Exception e) {
-            out.println("Login failed: " + e.getMessage());
+            JsonObject errorJson = new JsonObject();
+            errorJson.addProperty("status", "error");
+            errorJson.addProperty("message", "Login failed: " + e.getMessage());
+            out.println(errorJson.toString());
         }
     }
 }

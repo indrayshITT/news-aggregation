@@ -1,9 +1,12 @@
 package com.newsaggregation.servlet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.newsaggregation.model.User;
 import com.newsaggregation.service.NewsReactionService;
 
@@ -16,6 +19,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/api/news/reaction")
 public class NewsReactionServlet extends HttpServlet {
 	private final NewsReactionService reactionService = new NewsReactionService();
+    private final Gson gson = new Gson();
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         PrintWriter out = resp.getWriter();
@@ -23,29 +27,40 @@ public class NewsReactionServlet extends HttpServlet {
 
         if (session == null || session.getAttribute("user") == null) {
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            out.println("User must be logged in.");
+            JsonObject error = new JsonObject();
+            error.addProperty("status", "error");
+            error.addProperty("message", "User must be logged in.");
+            out.println(error.toString());
             return;
         }
 
-        User user = (User) session.getAttribute("user");
-        int userId = user.getId();
-
-        try {
-            int newsId = Integer.parseInt(req.getParameter("newsId"));
-            String reaction = req.getParameter("reaction");
+        try (BufferedReader reader = req.getReader()) {
+            JsonObject body = gson.fromJson(reader, JsonObject.class);
+            int newsId = body.get("newsId").getAsInt();
+            String reaction = body.get("reaction").getAsString();
 
             if (!reaction.equalsIgnoreCase("like") && !reaction.equalsIgnoreCase("dislike")) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.println("Invalid reaction. Use 'like' or 'dislike'.");
+                JsonObject error = new JsonObject();
+                error.addProperty("status", "error");
+                error.addProperty("message", "Invalid reaction. Use 'like' or 'dislike'.");
+                out.println(error.toString());
                 return;
             }
 
-            reactionService.react(userId, newsId, reaction);
-            out.println("Reaction recorded.");
+            User user = (User) session.getAttribute("user");
+            reactionService.react(user.getId(), newsId, reaction);
 
+            JsonObject success = new JsonObject();
+            success.addProperty("status", "success");
+            success.addProperty("message", "Reaction recorded.");
+            out.println(success.toString());
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.println("Error: " + e.getMessage());
+            JsonObject error = new JsonObject();
+            error.addProperty("status", "error");
+            error.addProperty("message", "Error: " + e.getMessage());
+            out.println(error.toString());
         }
     }
 
@@ -54,11 +69,18 @@ public class NewsReactionServlet extends HttpServlet {
         try {
             int newsId = Integer.parseInt(req.getParameter("newsId"));
             Map<String, Integer> summary = reactionService.getReactionSummary(newsId);
-            out.println("Likes: " + summary.getOrDefault("like", 0));
-            out.println("Dislikes: " + summary.getOrDefault("dislike", 0));
+
+            JsonObject result = new JsonObject();
+            result.addProperty("likes", summary.getOrDefault("like", 0));
+            result.addProperty("dislikes", summary.getOrDefault("dislike", 0));
+
+            out.println(result.toString());
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.println("Error: " + e.getMessage());
+            JsonObject error = new JsonObject();
+            error.addProperty("status", "error");
+            error.addProperty("message", "Error: " + e.getMessage());
+            out.println(error.toString());
         }
     }
 }

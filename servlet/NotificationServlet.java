@@ -6,6 +6,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.newsaggregation.model.News;
 import com.newsaggregation.model.User;
 import com.newsaggregation.service.NotificationService;
@@ -22,12 +24,15 @@ public class NotificationServlet extends HttpServlet {
 	private final NotificationService notificationService = new NotificationService();
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("text/plain");
+        resp.setContentType("application/json");
         PrintWriter out = resp.getWriter();
 
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            out.println("You must be logged in to view notifications.");
+            JsonObject error = new JsonObject();
+            error.addProperty("status", "error");
+            error.addProperty("message", "You must be logged in to view notifications.");
+            out.println(error.toString());
             return;
         }
 
@@ -37,20 +42,33 @@ public class NotificationServlet extends HttpServlet {
 
         try {
             List<News> newsList = notificationService.getConsoleNotifications(user.getId(), lastViewed, now);
+            JsonArray notifications = new JsonArray();
 
-            if (newsList.isEmpty()) {
-                out.println("No new notifications since your last visit.");
-            } else {
-                for (News news : newsList) {
-                    out.println("- " + news.getTitle() + " (" + news.getDate() + ")\n" + news.getUrl() + "\n");
-                }
+            for (News news : newsList) {
+                JsonObject obj = new JsonObject();
+                obj.addProperty("id", news.getId());
+                obj.addProperty("title", news.getTitle());
+                obj.addProperty("description", news.getContent());
+                obj.addProperty("url", news.getUrl());
+                obj.addProperty("source", news.getSource());
+                obj.addProperty("date", news.getDate().toString());
+                notifications.add(obj);
             }
+
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("status", "success");
+            responseJson.add("notifications", notifications);
+
+            out.println(responseJson.toString());
 
             UserService userService = new UserService();
             userService.updateLastViewedTime(user.getId(), now);
 
         } catch (Exception e) {
-            out.println("Error fetching notifications: " + e.getMessage());
+            JsonObject error = new JsonObject();
+            error.addProperty("status", "error");
+            error.addProperty("message", "Error fetching notifications: " + e.getMessage());
+            out.println(error.toString());
         }
     }
 }

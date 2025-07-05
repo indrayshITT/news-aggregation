@@ -19,14 +19,14 @@ public class ExternalServerDAO {
 
     public List<ExternalServer> getAll() throws SQLException {
         List<ExternalServer> list = new ArrayList<>();
-        String sql = "SELECT id, name, status, last_accessed FROM external_servers";
+        String sql = "SELECT id, name, api_key, active, api_url, last_accessed FROM external_servers";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ExternalServer server = new ExternalServer(
                     rs.getInt("id"),
                     rs.getString("name"),
-                    null,
+                    rs.getString("api_key"),
                     rs.getBoolean("active"),
                     rs.getString("api_url"),
                     rs.getTimestamp("last_accessed")
@@ -39,7 +39,7 @@ public class ExternalServerDAO {
     
     public List<ExternalServer> getAllActive() throws SQLException {
         List<ExternalServer> list = new ArrayList<>();
-        String sql = "SELECT id, name, active, api_url, last_accessed FROM external_servers WHERE active = ?";
+        String sql = "SELECT id, name, api_key, active, api_url, last_accessed FROM external_servers WHERE active = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
         	stmt.setBoolean(1, true);
             ResultSet rs = stmt.executeQuery();
@@ -56,25 +56,6 @@ public class ExternalServerDAO {
             }
         }
         return list;
-    }
-
-    public ExternalServer getById(int id) throws SQLException {
-        String sql = "SELECT * FROM external_servers WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new ExternalServer(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("api_key"),
-                    rs.getBoolean("active"),
-                    rs.getString("api_url"),
-                    rs.getTimestamp("last_accessed")
-                );
-            }
-        }
-        return null;
     }
 
     public void updateApiKey(int id, String apiKey) throws SQLException {

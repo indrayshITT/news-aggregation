@@ -19,30 +19,41 @@ public class UserCategoryDAO {
         this.connection = dbConnection.getConnection();
     }
     
-    public Map<Integer, List<String>> getAllUserCategoryKeywordPreferences() throws Exception {
-        Map<Integer, List<String>> map = new HashMap<>();
-        String sql = "SELECT category_id, keyword FROM user_category_keywords";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            ResultSet rs = stmt.executeQuery();
+    public Map<Integer, Map<String, List<String>>> getUserCategoryKeywordMap() throws SQLException {
+        Map<Integer, Map<String, List<String>>> userMap = new HashMap<>();
+
+        String sql = "SELECT uck.user_id, c.name AS category_name, uck.keyword " +
+                     "FROM user_categories uck " +
+                     "JOIN categories c ON uck.category_id = c.id ";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
-                int catId = rs.getInt("category_id");
+                int userId = rs.getInt("user_id");
+                String category = rs.getString("category_name");
                 String keyword = rs.getString("keyword");
-                map.computeIfAbsent(catId, k -> new ArrayList<>()).add(keyword);
+
+                userMap.putIfAbsent(userId, new HashMap<>());
+                Map<String, List<String>> categoryMap = userMap.get(userId);
+
+                categoryMap.putIfAbsent(category, new ArrayList<>());
+                categoryMap.get(category).add(keyword);
             }
         }
-        return map;
+        return userMap;
     }
 
 
     public void enableCategoryWithKeywords(int userId, int categoryId, List<String> keywords) throws SQLException {
-        String deleteSQL = "DELETE FROM user_category_keywords WHERE user_id = ? AND category_id = ?";
+        String deleteSQL = "DELETE FROM user_categories WHERE user_id = ? AND category_id = ?";
         try (PreparedStatement deleteStmt = connection.prepareStatement(deleteSQL)) {
             deleteStmt.setInt(1, userId);
             deleteStmt.setInt(2, categoryId);
             deleteStmt.executeUpdate();
         }
 
-        String insertSQL = "INSERT INTO user_category_keywords (user_id, category_id, keyword) VALUES (?, ?, ?)";
+        String insertSQL = "INSERT INTO user_categories (user_id, category_id, keyword) VALUES (?, ?, ?)";
         try (PreparedStatement insertStmt = connection.prepareStatement(insertSQL)) {
             for (String keyword : keywords) {
                 insertStmt.setInt(1, userId);
@@ -55,7 +66,7 @@ public class UserCategoryDAO {
     }
 
     public void disableCategory(int userId, int categoryId) throws SQLException {
-        String sql = "DELETE FROM user_category_keywords WHERE user_id = ? AND category_id = ?";
+        String sql = "DELETE FROM user_categories WHERE user_id = ? AND category_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, categoryId);
@@ -65,16 +76,16 @@ public class UserCategoryDAO {
 
     public List<UserCategory> getAllByUserId(int userId) throws SQLException {
         List<UserCategory> list = new ArrayList<>();
-        String sql = "SELECT c.id AS category_id, c.name, uck.user_id AS exists " +
+        String sql = "SELECT c.id AS category_id, c.name, uck.user_id AS is_enabled " +
                      "FROM categories c LEFT JOIN (" +
-                     "  SELECT DISTINCT category_id, user_id FROM user_category_keywords WHERE user_id = ?" +
+                     "  SELECT DISTINCT category_id, user_id FROM user_categories WHERE user_id = ?" +
                      ") uck ON c.id = uck.category_id";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                boolean enabled = rs.getObject("exists") != null;
+                boolean enabled = rs.getObject("is_enabled") != null;
                 list.add(new UserCategory(
                     userId,
                     rs.getInt("category_id"),
@@ -87,7 +98,7 @@ public class UserCategoryDAO {
 
     public List<String> getKeywordsByUserAndCategory(int userId, int categoryId) throws SQLException {
         List<String> keywords = new ArrayList<>();
-        String sql = "SELECT keyword FROM user_category_keywords WHERE user_id = ? AND category_id = ?";
+        String sql = "SELECT keyword FROM user_categories WHERE user_id = ? AND category_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, categoryId);
@@ -100,7 +111,7 @@ public class UserCategoryDAO {
     }
 
     public void addKeyword(int userId, int categoryId, String keyword) throws SQLException {
-        String sql = "INSERT INTO user_category_keywords (user_id, category_id, keyword) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO user_categories (user_id, category_id, keyword) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, categoryId);
@@ -110,7 +121,7 @@ public class UserCategoryDAO {
     }
 
     public void updateKeyword(int userId, int categoryId, String oldKeyword, String newKeyword) throws SQLException {
-        String sql = "UPDATE user_category_keywords SET keyword = ? WHERE user_id = ? AND category_id = ? AND keyword = ?";
+        String sql = "UPDATE user_categories SET keyword = ? WHERE user_id = ? AND category_id = ? AND keyword = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, newKeyword);
             stmt.setInt(2, userId);
@@ -121,7 +132,7 @@ public class UserCategoryDAO {
     }
 
     public void deleteKeyword(int userId, int categoryId, String keyword) throws SQLException {
-        String sql = "DELETE FROM user_category_keywords WHERE user_id = ? AND category_id = ? AND keyword = ?";
+        String sql = "DELETE FROM user_categories WHERE user_id = ? AND category_id = ? AND keyword = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, categoryId);

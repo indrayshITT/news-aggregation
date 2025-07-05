@@ -47,7 +47,7 @@ public class UserDAO {
     }
 
     public void updateLastViewedTime(int userId, Timestamp time) throws SQLException {
-        String sql = "UPDATE users SET last_viewed_notification_time = ? WHERE id = ?";
+        String sql = "UPDATE users SET last_viewed_notifications_at = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setTimestamp(1, time);
             stmt.setInt(2, userId);
