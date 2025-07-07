@@ -55,7 +55,7 @@ public class UserCategoryHandler {
                     jsonResponse.addProperty("message", "Keyword updated.");
                 }
                 case "deletekeyword" -> {
-                    String keyword = requestBody.get("keyword").getAsString();
+                    String keyword = requestBody.get("keywords").getAsString();
                     userCategoryService.deleteKeyword(userId, categoryId, keyword);
                     jsonResponse.addProperty("status", "success");
                     jsonResponse.addProperty("message", "Keyword deleted.");

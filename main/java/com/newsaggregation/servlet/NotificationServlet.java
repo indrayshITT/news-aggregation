@@ -11,13 +11,14 @@ import java.io.IOException;
 
 @WebServlet("/api/notifications")
 public class NotificationServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
 	private final NotificationHandler handler;
 
     public NotificationServlet() {
         this.handler = new NotificationHandler();
     }
 
-    // Constructor for injecting mock handler in tests
     protected NotificationServlet(NotificationHandler handler) {
         this.handler = handler;
     }

@@ -12,13 +12,14 @@ import java.io.IOException;
 
 @WebServlet("/api/news/*")
 public class NewsServlet extends HttpServlet {
-	 private final NewsHandler newsHandler;
+	private static final long serialVersionUID = 1L;
+	
+	private final NewsHandler newsHandler;
 
 	    public NewsServlet() {
 	        this.newsHandler = new NewsHandler();
 	    }
 
-	    // Constructor for test injection
 	    protected NewsServlet(NewsHandler handler) {
 	        this.newsHandler = handler;
 	    }

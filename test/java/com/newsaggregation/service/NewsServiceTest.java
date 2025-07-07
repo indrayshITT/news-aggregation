@@ -23,7 +23,6 @@ public class NewsServiceTest {
         DatabaseConnection mockConnection = mock(DatabaseConnection.class);
         mockNewsDAO = mock(NewsDAO.class);
 
-        // Anonymous class override to inject mocked DAO
         newsService = new NewsService(mockConnection) {
             @Override
             public List<News> searchNewsByKeywordsSortedByLikes(String[] keywords) throws Exception {

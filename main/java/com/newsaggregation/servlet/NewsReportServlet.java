@@ -11,13 +11,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/news/report")
 public class NewsReportServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
 	private final NewsReportHandler handler;
 
     public NewsReportServlet() {
         this.handler = new NewsReportHandler();
     }
 
-    // Constructor for injecting mock during unit tests
     protected NewsReportServlet(NewsReportHandler handler) {
         this.handler = handler;
     }

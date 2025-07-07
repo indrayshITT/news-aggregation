@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/auth/*")
 public class AuthServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
 	private final AuthHandler authHandler;
 
     public AuthServlet() {

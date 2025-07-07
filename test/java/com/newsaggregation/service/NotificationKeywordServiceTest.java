@@ -22,7 +22,6 @@ public class NotificationKeywordServiceTest {
         mockDbConnection = mock(DatabaseConnection.class);
         mockDao = mock(NotificationKeywordDAO.class);
 
-        // Inject mocked DAO using anonymous subclass
         service = new NotificationKeywordService(mockDbConnection) {
             @Override
             public List<String> getKeywordsByUser(int userId) throws Exception {

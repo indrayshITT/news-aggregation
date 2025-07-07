@@ -1,25 +1,25 @@
 package com.newsaggregation.servlet;
 
-import java.io.IOException;
-
-import com.newsaggregation.handler.ExternalServerHandler;
+import com.newsaggregation.handler.NotificationKeywordHandler;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/api/admin/external-servers/*")
-public class ExternalServerServlet extends HttpServlet {
+import java.io.IOException;
 
-	private final ExternalServerHandler handler;
+@WebServlet("/api/keywords")
+public class NotificationKeywordServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
+	private final NotificationKeywordHandler handler;
 
-    public ExternalServerServlet() {
-        this.handler = new ExternalServerHandler();
+    public NotificationKeywordServlet() {
+        this.handler = new NotificationKeywordHandler();
     }
 
-    // For unit testing
-    protected ExternalServerServlet(ExternalServerHandler handler) {
+    protected NotificationKeywordServlet(NotificationKeywordHandler handler) {
         this.handler = handler;
     }
 

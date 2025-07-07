@@ -23,7 +23,6 @@ public class SavedArticleServiceTest {
         mockDbConnection = mock(DatabaseConnection.class);
         mockDao = mock(SavedArticleDAO.class);
 
-        // Inject mock DAO manually using anonymous subclass
         service = new SavedArticleService(mockDbConnection) {
             @Override
             public List<News> getAllByUser(int userId) throws Exception {
@@ -76,10 +75,9 @@ public class SavedArticleServiceTest {
             SavedArticleDAO failingDao = mock(SavedArticleDAO.class);
             when(failingDao.getAllByUserId(anyInt())).thenThrow(new RuntimeException("DB failure"));
 
-            // This simulates a real failure
             assertThrows(Exception.class, () -> realService.getAllByUser(10));
         } catch (Exception e) {
-            // Ignored
+            
         }
     }
 }

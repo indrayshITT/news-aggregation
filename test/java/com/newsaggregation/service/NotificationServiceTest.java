@@ -73,7 +73,7 @@ public class NotificationServiceTest {
             assertThrows(Exception.class,
                     () -> realService.getConsoleNotifications(1, from, to));
         } catch (Exception e) {
-            // not required
+           
         }
     }
 }

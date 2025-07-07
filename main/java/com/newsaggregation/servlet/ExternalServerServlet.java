@@ -1,24 +1,25 @@
 package com.newsaggregation.servlet;
 
-import com.newsaggregation.handler.SavedArticleHandler;
+import java.io.IOException;
+
+import com.newsaggregation.handler.ExternalServerHandler;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
+@WebServlet("/api/admin/external-servers/*")
+public class ExternalServerServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
+	private final ExternalServerHandler handler;
 
-@WebServlet("/api/saved-articles")
-public class SavedArticleServlet extends HttpServlet {
-	private final SavedArticleHandler handler;
-
-    public SavedArticleServlet() {
-        this.handler = new SavedArticleHandler();
+    public ExternalServerServlet() {
+        this.handler = new ExternalServerHandler();
     }
 
-    // Constructor for test injection
-    protected SavedArticleServlet(SavedArticleHandler handler) {
+    protected ExternalServerServlet(ExternalServerHandler handler) {
         this.handler = handler;
     }
 
@@ -30,10 +31,5 @@ public class SavedArticleServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         handler.handlePost(req, resp);
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        handler.handleDelete(req, resp);
     }
 }

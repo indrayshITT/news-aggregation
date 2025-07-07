@@ -11,13 +11,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/news/reaction")
 public class NewsReactionServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
 	private final NewsReactionHandler handler;
 
     public NewsReactionServlet() {
         this.handler = new NewsReactionHandler();
     }
 
-    // Constructor for testing
     protected NewsReactionServlet(NewsReactionHandler handler) {
         this.handler = handler;
     }

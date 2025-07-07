@@ -11,6 +11,8 @@ import java.io.IOException;
 
 @WebServlet(name = "UserCategoryServlet", urlPatterns = {"/api/category/user"})
 public class UserCategoryServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
 	private final UserCategoryHandler handler;
 
     public UserCategoryServlet() {

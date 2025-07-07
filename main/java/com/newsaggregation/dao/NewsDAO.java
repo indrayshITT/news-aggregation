@@ -81,18 +81,6 @@ public class NewsDAO {
         return categories;
     }
 
-    private News mapNewsWithCategories(ResultSet rs) throws SQLException {
-        int id = rs.getInt("id");
-        String title = rs.getString("title");
-        String description = rs.getString("description");
-        String url = rs.getString("url");
-        String source = rs.getString("source");
-        Timestamp date = rs.getTimestamp("date");
-        News news = new News(id, title, description, url, source, date);
-        news.setCategories(getCategoriesForNews(id));
-        return news;
-    }
-
     public List<News> getNewsSortedByLikes() throws Exception {
         List<News> list = new ArrayList<>();
         String sql = "SELECT n.*, COUNT(CASE WHEN r.reaction = 'LIKE' THEN 1 END) AS like_count " +
@@ -327,5 +315,17 @@ public class NewsDAO {
         if (connection != null && !connection.isClosed()) {
             connection.close();
         }
+    }
+
+    private News mapNewsWithCategories(ResultSet rs) throws SQLException {
+        int id = rs.getInt("id");
+        String title = rs.getString("title");
+        String description = rs.getString("description");
+        String url = rs.getString("url");
+        String source = rs.getString("source");
+        Timestamp date = rs.getTimestamp("date");
+        News news = new News(id, title, description, url, source, date);
+        news.setCategories(getCategoriesForNews(id));
+        return news;
     }
 }

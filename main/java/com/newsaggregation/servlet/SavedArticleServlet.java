@@ -1,6 +1,6 @@
 package com.newsaggregation.servlet;
 
-import com.newsaggregation.handler.NotificationKeywordHandler;
+import com.newsaggregation.handler.SavedArticleHandler;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,16 +9,17 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet("/api/keywords")
-public class NotificationKeywordServlet extends HttpServlet {
-	private final NotificationKeywordHandler handler;
+@WebServlet("/api/saved-articles")
+public class SavedArticleServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
+	private final SavedArticleHandler handler;
 
-    public NotificationKeywordServlet() {
-        this.handler = new NotificationKeywordHandler();
+    public SavedArticleServlet() {
+        this.handler = new SavedArticleHandler();
     }
 
-    // For unit testing
-    protected NotificationKeywordServlet(NotificationKeywordHandler handler) {
+    protected SavedArticleServlet(SavedArticleHandler handler) {
         this.handler = handler;
     }
 
@@ -30,5 +31,10 @@ public class NotificationKeywordServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         handler.handlePost(req, resp);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        handler.handleDelete(req, resp);
     }
 }
