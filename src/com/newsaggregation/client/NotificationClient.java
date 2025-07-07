@@ -17,7 +17,8 @@ public class NotificationClient {
 	private CategoryClient categoryClient = new CategoryClient();
 	
 	public void showMenu(Scanner sc) throws JSONException {
-        while (true) {
+		boolean show = true;
+        while (show) {
             System.out.printf("\nWelcome to News Application, %s!\n", com.newsaggregation.util.UserSession.getUsername());
             System.out.println("Date: " + LocalDateTime.now().toLocalDate());
             System.out.println("Time:" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("h:mma")));
@@ -58,15 +59,16 @@ public class NotificationClient {
         System.out.println("\n-- Notifications --");
         for (int i = 0; i < notifications.length(); i++) {
             JSONObject news = notifications.getJSONObject(i);
-            System.out.printf("%d. %s\n", i + 1, news.getString("title"));
-            System.out.println("   Source: " + news.optString("source"));
-            System.out.println("   Published: " + news.optString("date"));
-            System.out.println("   URL: " + news.optString("url"));
+            System.out.printf("%d. %s\n", news.getInt("id"), news.getString("title"));
+            System.out.println("     Description: " + news.optString("description"));
+            System.out.println("     Source: " + news.optString("source"));
+            System.out.println("     URL: " + news.optString("url"));
         }
     }
 	
 	public void configureNotifications(Scanner sc) throws JSONException {
-		while (true) {
+		boolean configure = true;
+		while (configure) {
             printHeader();
             JSONArray categories = categoryClient.getAllCategories();
             JSONArray userCategoryPrefs = UserCategoryClient.getUserCategories();

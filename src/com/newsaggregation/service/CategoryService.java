@@ -15,7 +15,7 @@ public class CategoryService {
         }
 
         try {
-            String response = APIService.send("/api/admin/category", "POST", payload);
+            String response = APIService.send("/api/categories", "POST", payload);
             JSONObject json = new JSONObject(new JSONTokener(response));
             return json.optString("message", "No response message received.");
         } catch (Exception e) {

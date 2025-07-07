@@ -11,10 +11,10 @@ public class ClientFactory {
 
     public ClientFactory() {
         this.headlinesClient = new HeadlinesClient();
-        this.newsReactionClient = new NewsReactionClient(); // Can inject SavedArticleClient later if needed
+        this.newsReactionClient = new NewsReactionClient();
         this.savedArticleClient = new SavedArticleClient(headlinesClient, newsReactionClient);
-        this.searchClient = new SearchClient(); // no dependencies yet
-        this.notificationClient = new NotificationClient(); // no dependencies yet
+        this.searchClient = new SearchClient();
+        this.notificationClient = new NotificationClient();
     }
 
     public HeadlinesClient getHeadlinesClient() {

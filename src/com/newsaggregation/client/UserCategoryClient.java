@@ -124,7 +124,13 @@ public class UserCategoryClient {
         return new UserCategoryDTO(UserSession.getUserId(), categoryId, true, "", "updateKeyword", oldKeyword, newKeyword);
     }
 
-    private static UserCategoryDTO createDeleteKeywordDTO(Scanner sc, int categoryId) {
+    private static UserCategoryDTO createDeleteKeywordDTO(Scanner sc, int categoryId) throws JSONException {
+    	JSONArray keywords = service.getCategoryKeywords(categoryId);
+    	if(keywords.length() == 0) {
+        	System.out.println("No keywords avaialble.");
+        	return null;
+    	}
+		showKeywordList(keywords);
         String keyword = InputUtil.readString(sc, "Enter keyword to delete: ");
         return new UserCategoryDTO(UserSession.getUserId(), categoryId, true, keyword, "deleteKeyword", null, null);
     }

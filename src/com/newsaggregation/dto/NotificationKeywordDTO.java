@@ -5,8 +5,8 @@ import org.json.JSONObject;
 public class NotificationKeywordDTO {
     private final int userId;
     private final String keyword;
-    private final String oldKeyword; // used only for update
-    private final String action;     // "add", "update", "delete"
+    private final String oldKeyword;
+    private final String action;
 
     public NotificationKeywordDTO(int userId, String keyword, String action) {
         this.userId = userId;
