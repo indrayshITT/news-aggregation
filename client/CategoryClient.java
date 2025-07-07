@@ -3,39 +3,33 @@ package com.newsaggregation.client;
 import java.util.Scanner;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import com.newsaggregation.util.APIService;
+import com.newsaggregation.dto.CategoryDTO;
+import com.newsaggregation.service.CategoryService;
 import com.newsaggregation.util.InputUtil;
 
 public class CategoryClient {
-	public static void addCategory(Scanner sc) throws JSONException {
-        System.out.println("\n-- Add New News Category --");
-        String name = InputUtil.readString(sc, "Enter category name: ");
+	private final CategoryService categoryService;
 
+    public CategoryClient() {
+        this.categoryService = new CategoryService();
+    }
+
+    public void addCategory(Scanner scanner) {
+        System.out.println("\n-- Add New News Category --");
+
+        String name = InputUtil.readString(scanner, "Enter category name: ");
         if (name == null || name.isBlank()) {
             System.out.println("Category name cannot be empty.");
             return;
         }
 
-        JSONObject payload = new JSONObject();
-        payload.put("name", name);
-
-        String response = APIService.send("/api/admin/category", "POST", payload.toString());
-
-        try {
-            JSONObject jsonResponse = new JSONObject(new JSONTokener(response));
-            String message = jsonResponse.optString("message");
-            System.out.println(message);
-        } catch (Exception e) {
-            System.out.println("Error parsing response: " + response);
-        }
+        CategoryDTO category = new CategoryDTO(name);
+        String message = categoryService.addCategory(category);
+        System.out.println(message);
     }
-	
-	public static JSONArray getAllCategories() throws JSONException {
-        String response = APIService.send("/api/categories", "GET", null);
-        return new JSONArray(response);
+
+    public JSONArray getAllCategories() {
+        return categoryService.fetchAllCategories();
     }
 }

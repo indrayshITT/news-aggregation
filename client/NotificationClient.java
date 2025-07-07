@@ -8,12 +8,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.newsaggregation.util.APIService;
+import com.newsaggregation.service.APIService;
 import com.newsaggregation.util.InputUtil;
 import com.newsaggregation.util.UserSession;
 
 public class NotificationClient {
-	public static void showMenu(Scanner sc) throws JSONException {
+	
+	private CategoryClient categoryClient = new CategoryClient();
+	
+	public void showMenu(Scanner sc) throws JSONException {
         while (true) {
             System.out.printf("\nWelcome to News Application, %s!\n", com.newsaggregation.util.UserSession.getUsername());
             System.out.println("Date: " + LocalDateTime.now().toLocalDate());
@@ -37,7 +40,7 @@ public class NotificationClient {
         }
     }
 	
-	public static void viewNotifications() throws JSONException {
+	public void viewNotifications() throws JSONException {
         String response = APIService.send("/api/notifications", "GET", null);
         JSONObject json = new JSONObject(response);
 
@@ -62,10 +65,10 @@ public class NotificationClient {
         }
     }
 	
-	public static void configureNotifications(Scanner sc) throws JSONException {
+	public void configureNotifications(Scanner sc) throws JSONException {
 		while (true) {
             printHeader();
-            JSONArray categories = CategoryClient.getAllCategories();
+            JSONArray categories = categoryClient.getAllCategories();
             JSONArray userCategoryPrefs = UserCategoryClient.getUserCategories();
             JSONArray userKeywords = fetchGlobalKeywords();
 
@@ -85,21 +88,21 @@ public class NotificationClient {
             if (choice > 0 && choice <= categories.length()) {
                 JSONObject selectedCategory = categories.getJSONObject(choice - 1);
                 boolean isEnabled = isCategoryEnabled(userCategoryPrefs, selectedCategory.getInt("id"));
-                UserCategoryClient.handleCategoryChoice(sc, selectedCategory, isEnabled);
+                UserCategoryClient.processCategorySelection(sc, selectedCategory, isEnabled);
             } else {
                 System.out.println("Invalid option.");
             }
         }
     }
 	
-	private static void printHeader() {
+	private void printHeader() {
         System.out.printf("\nWelcome to the News Application, %s!\n", UserSession.getUsername());
         System.out.println("Date: " + LocalDateTime.now().toLocalDate());
         System.out.println("Time: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("h:mma")));
         System.out.println("C O N F I G U R E - N O T I F I C A T I O N S");
     }
 	
-	private static int printCategoryOptions(JSONArray categories, JSONArray userPrefs, JSONArray globalKeywords) throws JSONException {
+	private int printCategoryOptions(JSONArray categories, JSONArray userPrefs, JSONArray globalKeywords) throws JSONException {
         int index = 1;
         for (int i = 0; i < categories.length(); i++) {
             JSONObject cat = categories.getJSONObject(i);
@@ -115,7 +118,7 @@ public class NotificationClient {
         return index;
     }
 	
-	private static boolean isCategoryEnabled(JSONArray userPrefs, int categoryId) throws JSONException {
+	private boolean isCategoryEnabled(JSONArray userPrefs, int categoryId) throws JSONException {
         for (int j = 0; j < userPrefs.length(); j++) {
             JSONObject userPref = userPrefs.getJSONObject(j);
             if (userPref.getInt("categoryId") == categoryId) {
@@ -125,7 +128,7 @@ public class NotificationClient {
         return false;
     }
 	
-	public static void manageKeywords(Scanner sc) throws JSONException {
+	public void manageKeywords(Scanner sc) throws JSONException {
         while (true) {
             System.out.println("\n--- Keyword Notification Configuration ---");
             System.out.println("1. View Keywords");
@@ -146,7 +149,7 @@ public class NotificationClient {
         }
     }
 
-    private static void viewKeywords() throws JSONException {
+    private void viewKeywords() throws JSONException {
     	JSONArray userKeywords = fetchGlobalKeywords();
         if (userKeywords.length() == 0) {
             System.out.println("No keywords configured.");
@@ -158,7 +161,7 @@ public class NotificationClient {
         }
     }
 
-    private static void addKeyword(Scanner sc) throws JSONException {
+    private void addKeyword(Scanner sc) throws JSONException {
         String keyword = InputUtil.readString(sc, "Enter keyword to add: ");
         JSONObject payload = new JSONObject();
         payload.put("userId", UserSession.getUserId());
@@ -168,7 +171,7 @@ public class NotificationClient {
         System.out.println(new JSONObject(response).optString("message", "Failed to add keyword."));
     }
 
-    private static void updateKeyword(Scanner sc) throws JSONException {
+    private void updateKeyword(Scanner sc) throws JSONException {
         String oldKeyword = InputUtil.readString(sc, "Enter old keyword: ");
         String newKeyword = InputUtil.readString(sc, "Enter new keyword: ");
         JSONObject payload = new JSONObject();
@@ -180,7 +183,7 @@ public class NotificationClient {
         System.out.println(new JSONObject(response).optString("message", "Failed to update keyword."));
     }
 
-    private static void deleteKeyword(Scanner sc) throws JSONException {
+    private void deleteKeyword(Scanner sc) throws JSONException {
         String keyword = InputUtil.readString(sc, "Enter keyword to delete: ");
         JSONObject payload = new JSONObject();
         payload.put("userId", UserSession.getUserId());
@@ -190,7 +193,7 @@ public class NotificationClient {
         System.out.println(new JSONObject(response).optString("message", "Failed to delete keyword."));
     }
     
-    private static JSONArray fetchGlobalKeywords() {
+    private JSONArray fetchGlobalKeywords() {
         try {
             String url = "/api/keywords?userId=" + UserSession.getUserId();
             String res = APIService.send(url, "GET", null);

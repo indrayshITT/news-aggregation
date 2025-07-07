@@ -1,56 +1,41 @@
 package com.newsaggregation.client;
 
-import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import com.newsaggregation.util.APIService;
+import com.newsaggregation.dto.SearchDTO;
+import com.newsaggregation.service.SearchService;
 import com.newsaggregation.util.InputUtil;
 
 public class SearchClient {
-	public static void search(Scanner sc) throws JSONException {
-        System.out.println("\n-- Search News --");
-        String keywords = InputUtil.readString(sc, "Enter keywords to search (comma-separated): ");
-        String[] keywordArray = keywords.split(",");
+	private final SearchService searchService = new SearchService();
+    private final HeadlinesClient headlinesClient = new HeadlinesClient();
+    private final NewsReactionClient reactionClient = new NewsReactionClient();
 
-        System.out.println("Do you want to filter by date range? (yes/no): ");
-        String filter = sc.nextLine().trim().toLowerCase();
+    public void search(Scanner sc) {
+        try {
+            System.out.println("\n-- Search News --");
+            String input = InputUtil.readString(sc, "Enter keywords to search (comma-separated): ");
+            List<String> keywords = Arrays.asList(input.split(","));
 
-        String endpoint;
-        if (filter.equalsIgnoreCase("yes")) {
-            LocalDate from = InputUtil.readDate(sc, "Enter start date (YYYY-MM-DD): ");
-            LocalDate to = InputUtil.readDate(sc, "Enter end date (YYYY-MM-DD): ");
+            boolean applyDateFilter = InputUtil.readBoolean(sc, "Do you want to filter by date range? (yes/no): ");
 
-            StringBuilder url = new StringBuilder("/api/news/search/filter?from=" + from + "&to=" + to);
-            for (String word : keywordArray) {
-                url.append("&keyword=").append(word.trim());
+            SearchDTO dto = applyDateFilter
+                    ? new SearchDTO(keywords, InputUtil.readDate(sc, "Enter start date (YYYY-MM-DD): "), InputUtil.readDate(sc, "Enter end date (YYYY-MM-DD): "))
+                    : new SearchDTO(keywords);
+
+            JSONArray results = searchService.searchNews(dto);
+            headlinesClient.displayNews(results, "No news found for the given keywords.");
+
+            if (results.length() > 0) {
+                reactionClient.showArticleActions(sc);
             }
-            endpoint = url.toString();
-        } else {
-            StringBuilder url = new StringBuilder("/api/news/search?");
-            for (String word : keywordArray) {
-                url.append("keyword=").append(word.trim()).append("&");
-            }
-            endpoint = url.substring(0, url.length() - 1);
-        }
 
-        String response = APIService.send(endpoint, "GET", null);
-        JSONArray results = new JSONArray(response);
-
-        if (results.length() == 0) {
-            System.out.println("No news found for the given keywords.");
-            return;
-        }
-
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject news = results.getJSONObject(i);
-            System.out.printf("\n%d. %s\n", i + 1, news.getString("title"));
-            System.out.println("   Description: " + news.optString("description"));
-            System.out.println("   Source: " + news.optString("source"));
-            System.out.println("   URL: " + news.optString("url"));
+        } catch (Exception e) {
+            System.out.println("Something went wrong while searching. Please try again.");
         }
     }
 }
